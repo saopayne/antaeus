@@ -1,18 +1,13 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    kotlin("jvm") version "1.3.11"
+    kotlin("jvm")
 }
 
-
-repositories {
-    mavenCentral()
-}
+kotlinProject()
 
 dependencies {
-    compile(kotlin("stdlib-jdk8"))
-}
+    implementation(project(":pleo-antaeus-core"))
+    implementation(project(":pleo-antaeus-models"))
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    implementation("io.javalin:javalin:2.6.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.9.8")
 }

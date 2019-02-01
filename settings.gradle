@@ -1,6 +1,0 @@
-rootProject.name = 'antaeus'
-include 'pleo-antaeus-rest'
-include 'pleo-antaeus-app'
-include 'pleo-antaeus-core'
-include 'pleo-antaeus-data'
-
