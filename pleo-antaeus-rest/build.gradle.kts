@@ -1,18 +1,9 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    kotlin("jvm") version "1.3.11"
+    kotlin("jvm")
 }
 
-
-repositories {
-    mavenCentral()
-}
+kotlinProject()
 
 dependencies {
-    compile(kotlin("stdlib-jdk8"))
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    implementation("io.javalin:javalin:2.6.0")
 }
