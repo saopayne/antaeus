@@ -3,3 +3,9 @@ plugins {
 }
 
 kotlinProject()
+
+dataLibs()
+
+dependencies {
+    implementation(project(":pleo-antaeus-models"))
+}

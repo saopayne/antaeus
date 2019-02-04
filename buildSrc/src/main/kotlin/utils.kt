@@ -1,8 +1,8 @@
+
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.kotlin
 
-const val koinVersion = "1.0.2"
 const val junitVersion = "5.3.2"
 
 /**
@@ -13,11 +13,9 @@ fun Project.kotlinProject() {
         // Kotlin libs
         "implementation"(kotlin("stdlib-jdk8"))
 
-        // Koin
-        "implementation"("org.koin:koin-core:$koinVersion")
-        "implementation"("org.koin:koin-core-ext:$koinVersion")
-        "testImplementation"("org.koin:koin-test:$koinVersion")
-        "implementation"("org.koin:koin-java:$koinVersion")
+        // Logging
+        "implementation"("org.slf4j:slf4j-simple:1.7.25")
+        "implementation"("io.github.microutils:kotlin-logging:1.6.22")
 
         // Mockk
         "testImplementation"("io.mockk:mockk:1.9")
@@ -26,5 +24,15 @@ fun Project.kotlinProject() {
         "testImplementation"("org.junit.jupiter:junit-jupiter-api:$junitVersion")
         "testImplementation"("org.junit.jupiter:junit-jupiter-params:$junitVersion")
         "runtime"("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    }
+}
+
+/**
+ * Configures data layer libs needed for interacting with the DB
+ */
+fun Project.dataLibs() {
+    dependencies {
+        "implementation"("org.jetbrains.exposed:exposed:0.12.1")
+        "implementation"("org.xerial:sqlite-jdbc:3.25.2")
     }
 }
