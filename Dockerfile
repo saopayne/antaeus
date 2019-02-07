@@ -1,5 +1,8 @@
 FROM adoptopenjdk/openjdk11-openj9:latest
 
+# Expose the app port.
+EXPOSE 7000
+
 # Setup app user.
 RUN useradd --home /home/pleo --shell /bin/false pleo
 
