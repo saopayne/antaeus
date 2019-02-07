@@ -6,6 +6,10 @@ echo -n 'Clearing build cache: '
 docker volume remove -f pleo-antaeus-build-cache
 
 # Remove all pleo-antaeus images.
-for image in $(docker images --quiet --filter="reference=pleo-antaeus:*"); do
-  docker rmi "$image"
-done
+docker images --quiet --filter="reference=pleo-antaeus:*" | \
+ while read image; do
+   docker rmi "$image"
+ done
+
+# Optionally reclaim space of dangling images.
+docker system prune
