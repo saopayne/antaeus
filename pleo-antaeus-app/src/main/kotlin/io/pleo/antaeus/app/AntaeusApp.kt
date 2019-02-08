@@ -42,7 +42,7 @@ fun main() {
             }
         }
 
-    // Set up database abstraction layer.
+    // Set up data access layer.
     val dal = AntaeusDal(db = db)
 
     // Insert example data in the database.
