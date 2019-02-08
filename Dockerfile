@@ -1,5 +1,8 @@
 FROM adoptopenjdk/openjdk11-openj9:latest
 
+# Install dependencies
+RUN apt-get update && apt-get install -y sqlite3
+
 # Expose the app port.
 EXPOSE 7000
 
