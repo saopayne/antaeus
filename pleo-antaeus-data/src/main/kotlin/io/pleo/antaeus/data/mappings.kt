@@ -1,3 +1,8 @@
+/*
+    Defines mappings between database rows and Kotlin objects.
+    To be used by the `AntaeusDal` module.
+ */
+
 package io.pleo.antaeus.data
 
 import io.pleo.antaeus.models.Currency

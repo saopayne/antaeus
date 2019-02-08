@@ -1,3 +1,8 @@
+/*
+    Defines database tables and their schemas.
+    To be used by the `AntaeusDal` module.
+ */
+
 package io.pleo.antaeus.data
 
 import org.jetbrains.exposed.sql.Table

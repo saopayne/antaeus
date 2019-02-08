@@ -1,3 +1,10 @@
+/*
+    This is the billing service. It is a "mock" of an external service that you can pretend runs on another system.
+    With this API you can ask customers to pay an invoice.
+
+    This mock will always succeed, however the documentation lays out scenarios in which paying an invoice could fail.
+ */
+
 package io.pleo.antaeus.core.services
 
 import io.pleo.antaeus.models.Invoice

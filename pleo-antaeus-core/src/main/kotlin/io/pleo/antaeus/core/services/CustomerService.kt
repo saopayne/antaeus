@@ -1,3 +1,7 @@
+/*
+    Implements endpoints related to customers.
+ */
+
 package io.pleo.antaeus.core.services
 
 import io.pleo.antaeus.core.exceptions.CustomerNotFoundException
