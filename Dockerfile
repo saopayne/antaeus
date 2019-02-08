@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk11-openj9:latest
+FROM adoptopenjdk/openjdk11:latest
 
 # Install dependencies
 RUN apt-get update && apt-get install -y sqlite3
