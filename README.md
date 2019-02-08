@@ -9,9 +9,8 @@ Welcome to our challenge.
 As most "Software as a Service" (SaaS) companies, Pleo needs to charge a subscription fee every month. Our database contains a few invoices in the different markets we operate in. Your task is to build the logic that will pay those invoices on the first of the month. While this may seem simple, there is space for some decisions to be taken and you will be expected to justify them.
 
 ### Structure
-The code given is structured as following. Feel free however to modify the structure to fit your needs.
+The code given is structured as follows. Feel free however to modify the structure to fit your needs.
 ```
-
 ├── pleo-antaeus-app
 |
 |       Packages containing the main() application. 
