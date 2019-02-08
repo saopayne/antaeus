@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Create a new image version with latest code changes.
 docker build . --tag pleo-antaeus
