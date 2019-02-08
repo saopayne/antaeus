@@ -3,7 +3,6 @@ package io.pleo.antaeus.core.services
 import io.pleo.antaeus.models.Invoice
 
 class BillingService {
-
     /*
         Charge a customer's account the amount from the invoice.
 
@@ -16,6 +15,7 @@ class BillingService {
           `CurrencyMismatchException`: when the currency does not match the customer account.
      */
     fun charge(invoice: Invoice): Boolean {
-        TODO("External service call")
+        // Fake implementation of internal API.
+        return true
     }
 }
