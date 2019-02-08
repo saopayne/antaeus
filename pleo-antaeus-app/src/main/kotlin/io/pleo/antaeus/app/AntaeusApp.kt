@@ -45,8 +45,8 @@ fun main() {
     // Set up database abstraction layer.
     val dal = AntaeusDal(db = db)
 
-    // Insert initial data in the database.
-    setupEntities(dal = dal)
+    // Insert example data in the database.
+    setupExampleEntities(dal = dal)
 
     // Create REST web services.
     val invoiceService = InvoiceService(dal = dal)
@@ -59,7 +59,7 @@ fun main() {
 }
 
 // Setup initial data
-private fun setupEntities(dal: AntaeusDal) {
+private fun setupExampleEntities(dal: AntaeusDal) {
     // A customer with an account balance of 42 DKK.
     val customer = dal.createCustomer(
        accountBalance = Money(
