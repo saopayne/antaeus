@@ -1,3 +1,8 @@
+/*
+    Defines the main() entry point of the app.
+    Configures the database and sets up the REST web service.
+ */
+
 @file:JvmName("AntaeusApp")
 
 package io.pleo.antaeus.app
@@ -20,11 +25,14 @@ import java.math.BigDecimal
 import java.sql.Connection
 
 fun main() {
+    // The tables to create in the database.
+    val tables = arrayOf(InvoiceTable, CustomerTable)
+
+    // Connect to the database and create the needed tables. Drop any existing data.
     val db = Database
         .connect("jdbc:sqlite:/tmp/data.db", "org.sqlite.JDBC")
         .also {
             TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
-            val tables = arrayOf(InvoiceTable, CustomerTable)
             transaction(it) {
                 addLogger(StdOutSqlLogger)
                 // Drop all existing tables to ensure a clean slate on each run
@@ -34,10 +42,13 @@ fun main() {
             }
         }
 
+    // Set up database abstraction layer.
     val dal = AntaeusDal(db = db)
 
+    // Insert initial data in the database.
     setupEntities(dal = dal)
 
+    // Create REST web services.
     val invoiceService = InvoiceService(dal = dal)
     val customerService = CustomerService(dal = dal)
 
@@ -47,8 +58,9 @@ fun main() {
     ).run()
 }
 
-// This will create all schemas and setup initial data
+// Setup initial data
 private fun setupEntities(dal: AntaeusDal) {
+    // A customer with an account balance of 42 DKK.
     val customer = dal.createCustomer(
        accountBalance = Money(
            value = BigDecimal(42),
@@ -56,6 +68,7 @@ private fun setupEntities(dal: AntaeusDal) {
        )
     )
 
+    // Customer needs to pay an invoice of 10 DKK.
     val invoice = dal.createInvoice(
         amount = Money(
             value = BigDecimal.TEN,
