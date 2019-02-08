@@ -1,3 +1,3 @@
 package io.pleo.antaeus.core.exceptions
 
-class InvoiceNotFoundException(id: String) : EntityNotFoundException("Invoice", id)
+class InvoiceNotFoundException(id: Int) : EntityNotFoundException("Invoice", id)

@@ -4,13 +4,15 @@ import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.ApiBuilder.path
 import io.pleo.antaeus.core.exceptions.InvoiceNotFoundException
+import io.pleo.antaeus.core.services.CustomerService
 import io.pleo.antaeus.core.services.InvoiceService
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
 class AntaeusRest (
-    private val invoiceService: InvoiceService
+    private val invoiceService: InvoiceService,
+    private val customerService: CustomerService
 ) : Runnable {
 
     override fun run() {
@@ -45,7 +47,17 @@ class AntaeusRest (
                        }
 
                        get(":id") {
-                          it.json(invoiceService.fetch(it.pathParam("id")))
+                          it.json(invoiceService.fetch(it.pathParam("id").toInt()))
+                       }
+                   }
+
+                   path("customers") {
+                       get {
+                           it.json(customerService.fetchAll())
+                       }
+
+                       get(":id") {
+                           it.json(customerService.fetch(it.pathParam("id").toInt()))
                        }
                    }
                }

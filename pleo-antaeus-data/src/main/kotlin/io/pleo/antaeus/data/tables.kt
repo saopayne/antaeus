@@ -2,6 +2,15 @@ package io.pleo.antaeus.data
 
 import org.jetbrains.exposed.sql.Table
 
-object Invoices : Table() {
-    val id = varchar("id", 10).primaryKey() // Column<String>
+object InvoiceTable : Table() {
+    val id = integer("id").autoIncrement().primaryKey()
+    val currency = varchar("currency", 3)
+    val value = decimal("value", 1000, 2)
+    val customerId = reference("customer_id", CustomerTable.id)
+}
+
+object CustomerTable : Table() {
+    val id = integer("id").autoIncrement().primaryKey()
+    val currency = varchar("currency", 3)
+    val balance = decimal("balance", 1000, 2)
 }

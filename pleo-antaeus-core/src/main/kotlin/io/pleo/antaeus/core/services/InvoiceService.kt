@@ -9,7 +9,7 @@ class InvoiceService(private val dal: AntaeusDal) {
        return dal.fetchInvoices()
     }
 
-    fun fetch(id: String): Invoice {
+    fun fetch(id: Int): Invoice {
         return dal.fetchInvoice(id) ?: throw InvoiceNotFoundException(id)
     }
 }

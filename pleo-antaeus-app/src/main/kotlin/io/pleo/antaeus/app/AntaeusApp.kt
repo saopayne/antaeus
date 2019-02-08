@@ -2,9 +2,11 @@
 
 package io.pleo.antaeus.app
 
+import io.pleo.antaeus.core.services.CustomerService
 import io.pleo.antaeus.core.services.InvoiceService
 import io.pleo.antaeus.data.AntaeusDal
-import io.pleo.antaeus.data.Invoices
+import io.pleo.antaeus.data.CustomerTable
+import io.pleo.antaeus.data.InvoiceTable
 import io.pleo.antaeus.rest.AntaeusRest
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.Database
@@ -14,6 +16,7 @@ import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.math.BigDecimal
 import java.sql.Connection
 
 private val logger = KotlinLogging.logger {}
@@ -27,16 +30,21 @@ fun main() {
         }
 
     val dal = AntaeusDal(db = db)
-    val invoiceService = InvoiceService(dal = dal)
 
-    AntaeusRest(invoiceService = invoiceService).run()
+    val invoiceService = InvoiceService(dal = dal)
+    val customerService = CustomerService(dal = dal)
+
+    AntaeusRest(
+        invoiceService = invoiceService,
+        customerService = customerService
+    ).run()
 }
 
 // This will create all schemas and setup initial data
 private fun setupDB(db: Database) {
     logger.info { "Setting up initial database" }
 
-    val tables = arrayOf(Invoices)
+    val tables = arrayOf(InvoiceTable, CustomerTable)
 
     transaction(db) {
         addLogger(StdOutSqlLogger)
@@ -48,8 +56,15 @@ private fun setupDB(db: Database) {
         SchemaUtils.create(*tables)
 
         // Setup initial state
-        Invoices.insert {
-            it[id] = "42"
+        val firstCustomerId = CustomerTable.insert {
+            it[balance] = BigDecimal(42)
+            it[currency] = "DKK"
+        } get CustomerTable.id
+
+        InvoiceTable.insert {
+            it[value] = BigDecimal.TEN
+            it[currency] = "DKK"
+            it[customerId] = firstCustomerId!!
         }
     }
 
