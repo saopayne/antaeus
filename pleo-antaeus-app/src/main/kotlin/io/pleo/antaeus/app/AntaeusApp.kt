@@ -7,6 +7,7 @@
 
 package io.pleo.antaeus.app
 
+import io.pleo.antaeus.core.services.BillingService
 import io.pleo.antaeus.core.services.CustomerService
 import io.pleo.antaeus.core.services.InvoiceService
 import io.pleo.antaeus.data.AntaeusDal
@@ -49,7 +50,8 @@ fun main() {
     setupExampleEntities(dal = dal)
 
     // Create REST web services.
-    val invoiceService = InvoiceService(dal = dal)
+    val billingService = BillingService()
+    val invoiceService = InvoiceService(dal = dal, billingService = billingService)
     val customerService = CustomerService(dal = dal)
 
     AntaeusRest(
