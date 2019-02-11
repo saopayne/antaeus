@@ -1,3 +1,25 @@
+## Initial Thoughts
+
+A naive approach that would easily be defeated in a wrestle with Antaeus would be:
+1. Have a schedule that's triggered on the first of the month at a hour that then runs a long running service
+   to charge invoices with PENDING status.
+2. For each pending invoice, attempt a charge for the invoice with:
+
+      Throw exceptions :-
+      - Throw CustomerNotFoundException when no customer with id is found.
+        + Escalate this to an agent
+      - Throw CurrencyMismatchException when the currencies from invoice and customers don't match.
+        + Escalate this to an agent
+      - Throw NetworkException when a network error occurs.
+        + Add a retry mechanism for 2 more times before escalating to an agent
+      
+      Return boolean :-
+      
+      - True if the account was successfully charged.
+          + Update the invoice status as PAID 
+      - False if the account balance of the customer is not up to to the invoice amount.
+          + Leave invoice status as PENDING         
+                
 ## Antaeus
 
 Antaeus (/ænˈtiːəs/), in Greek mythology, a giant of Libya, the son of the sea god Poseidon and the Earth goddess Gaia. He compelled all strangers who were passing through the country to wrestle with him. Whenever Antaeus touched the Earth (his mother), his strength was renewed, so that even if thrown to the ground, he was invincible. Heracles, in combat with him, discovered the source of his strength and, lifting him up from Earth, crushed him to death.
