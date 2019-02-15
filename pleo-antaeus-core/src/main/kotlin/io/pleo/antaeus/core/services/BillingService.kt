@@ -13,16 +13,18 @@ class BillingService( private val paymentProvider: PaymentProvider, private val 
 
     companion object: KLogging()
 
+    val retryInvoiceList = mutableListOf<Invoice>()
+
     fun chargeInvoices() {
         val dueInvoiceList = dal.fetchDueInvoices()
         chargeInvoicesInList(dueInvoiceList)
     }
 
-    fun chargeInvoicesInList(invoiceList: List<Invoice>) {
+    fun chargeInvoicesInList(invoiceList: List<Invoice>, retry = false) {
         invoiceList.forEach { invoice ->
             // ideally, each charge should run in a sequential manner for a start but coroutines can be explored
             try {
-                var isChargeSuccessful = paymentProvider.charge(invoice)
+                val isChargeSuccessful = paymentProvider.charge(invoice)
                 if (isChargeSuccessful) dal.updateInvoiceStatus(invoice.id, InvoiceStatus.PAID)
             } catch (nfException: CustomerNotFoundException) {
                 escalate(invoice, EscalationType.CUSTOMER_NOT_FOUND)
@@ -30,7 +32,7 @@ class BillingService( private val paymentProvider: PaymentProvider, private val 
                 escalate(invoice, EscalationType.CURRENCY_MISMATCH)
             } catch (networkException: NetworkException) {
                 logger.debug("Network error while charging invoice: ${invoice.id}, enqueuing for a retry.")
-                addInvoiceToRetryList(invoice)
+                if (!retry) addInvoiceToRetryList(invoice)
             }
         }
     }
@@ -61,10 +63,14 @@ class BillingService( private val paymentProvider: PaymentProvider, private val 
         addInvoiceToRetryList(invoice)
     }
 
-    fun addInvoiceToRetryList(invoice: Invoice) {}
+    fun addInvoiceToRetryList(invoice: Invoice) {
+        retryInvoiceList.add(invoice)
+    }
 
     // retry failed just once which w
-    fun retryFailedInvoices() {}
+    fun retryFailedInvoices() {
+        chargeInvoicesInList(retryInvoiceList, true)
+    }
 
     enum class EscalationType {
         CUSTOMER_NOT_FOUND, CURRENCY_MISMATCH
