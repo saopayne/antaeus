@@ -15,6 +15,10 @@ class BillingService( private val paymentProvider: PaymentProvider, private val 
 
     fun chargeInvoices() {
         val invoiceList = dal.fetchInvoices(InvoiceStatus.PENDING)
+        chargeInvoicesInList(invoiceList)
+    }
+
+    fun chargeInvoicesInList(invoiceList: List<Invoice>) {
         invoiceList.forEach { invoice ->
             // ideally, each charge should run in a sequential manner for a start but coroutines can be explored
             try {
@@ -28,7 +32,7 @@ class BillingService( private val paymentProvider: PaymentProvider, private val 
                 logger.debug("Network error while charging invoice: ${invoice.id}, enqueuing for a retry.")
                 addInvoiceToRetryList()
             }
-       }
+        }
     }
 
     /**
@@ -52,6 +56,7 @@ class BillingService( private val paymentProvider: PaymentProvider, private val 
 
     fun addInvoiceToRetryList(invoice: Invoice) {}
 
+    // retry failed just once which w
     fun retryFailedInvoices() {}
 
     enum class EscalationType {
