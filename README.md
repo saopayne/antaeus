@@ -24,6 +24,8 @@ An approach that I suppose won't be easily defeated in a wrestle with Antaeus wo
              
 3. For each invoice charge process, run in a separate coroutines which are cheap to spin and doesn't hurt performance that much.
 
+4. Additional URL endpoint `$ curl http://localhost:7000/rest/v1/invoices/update` to manually test out the charging of all due invoices.
+
 #### Domain Changes
 - Add `valid` to Invoice table which defaults to true for a new invoice.
 This field shows which invoice we've marked as invalid and should be dropped subsequently.           
