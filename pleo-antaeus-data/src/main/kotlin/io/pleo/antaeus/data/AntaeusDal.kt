@@ -15,6 +15,7 @@ import io.pleo.antaeus.models.Money
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -38,9 +39,9 @@ class AntaeusDal(private val db: Database) {
         }
     }
 
-    fun fetchInvoices(status: InvoiceStatus = InvoiceStatus.PENDING): List<Invoice> {
+    fun fetchInvoices(status: InvoiceStatus): List<Invoice> {
         val invoiceStatus = status.toString()
-        // collect a list of invoices with specified status with default as PENDING
+        // collect a list of invoices with specified status
         return transaction(db) {
             InvoiceTable
                 .select{ InvoiceTable.status.eq(invoiceStatus) }
@@ -57,10 +58,41 @@ class AntaeusDal(private val db: Database) {
                     it[this.currency] = amount.currency.toString()
                     it[this.status] = status.toString()
                     it[this.customerId] = customer.id
+                    it[this.valid] = true
                 } get InvoiceTable.id
         }
 
         return fetchInvoice(id!!)
+    }
+
+    fun updateInvoiceStatus(id: Int, status: InvoiceStatus): Boolean {
+        val invoice = fetchInvoice(id)
+        if (invoice != null) {
+            val id = transaction(db) {
+                InvoiceTable
+                    .update({InvoiceTable.id.eq(id)}) {
+                        it[this.status] = status.toString()
+                    }
+            }
+            return true
+        }
+
+        return false
+    }
+
+    fun updateInvoiceValidity(id: Int, valid: Boolean): Boolean {
+        val invoice = fetchInvoice(id)
+        if (invoice != null) {
+            val id = transaction(db) {
+                InvoiceTable
+                        .update({InvoiceTable.id.eq(id)}) {
+                            it[this.valid] = valid
+                        }
+            }
+            return true
+        }
+
+        return false
     }
 
     fun fetchCustomer(id: Int): Customer? {
