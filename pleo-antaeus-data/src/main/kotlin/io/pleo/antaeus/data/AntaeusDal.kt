@@ -44,8 +44,20 @@ class AntaeusDal(private val db: Database) {
         // collect a list of invoices with specified status
         return transaction(db) {
             InvoiceTable
-                .select{ InvoiceTable.status.eq(invoiceStatus) }
-                .map { it.toInvoice() }
+                    .select{ InvoiceTable.status.eq(invoiceStatus) }
+                    .map { it.toInvoice() }
+        }
+    }
+
+    fun fetchDueInvoices(): List<Invoice> {
+        val invoiceStatus = InvoiceStatus.PENDING.toString()
+        // collect a list of valid invoices with pending status
+        return transaction(db) {
+            InvoiceTable
+                .select{
+                    InvoiceTable.status.eq(invoiceStatus)
+                    InvoiceTable.valid.eq(true)
+                }.map { it.toInvoice() }
         }
     }
 
@@ -93,6 +105,21 @@ class AntaeusDal(private val db: Database) {
         }
 
         return false
+    }
+
+    fun updateInvoiceCurrency(id: Int) {
+        var invoice = fetchInvoice(id)
+        var customer = fetchCustomer(invoice?.customerId!!)
+
+        if (invoice != null && customer != null) {
+            val id = transaction(db) {
+                InvoiceTable
+                        .update({InvoiceTable.id.eq(id)}) {
+                            it[this.value] = invoice.amount.value
+                            it[this.currency] = customer.currency.toString()
+                        }
+            }
+        }
     }
 
     fun fetchCustomer(id: Int): Customer? {

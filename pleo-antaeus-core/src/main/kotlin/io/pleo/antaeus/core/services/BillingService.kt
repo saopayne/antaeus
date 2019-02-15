@@ -14,8 +14,8 @@ class BillingService( private val paymentProvider: PaymentProvider, private val 
     companion object: KLogging()
 
     fun chargeInvoices() {
-        val invoiceList = dal.fetchInvoices(InvoiceStatus.PENDING)
-        chargeInvoicesInList(invoiceList)
+        val dueInvoiceList = dal.fetchDueInvoices()
+        chargeInvoicesInList(dueInvoiceList)
     }
 
     fun chargeInvoicesInList(invoiceList: List<Invoice>) {
@@ -30,7 +30,7 @@ class BillingService( private val paymentProvider: PaymentProvider, private val 
                 escalate(invoice, EscalationType.CURRENCY_MISMATCH)
             } catch (networkException: NetworkException) {
                 logger.debug("Network error while charging invoice: ${invoice.id}, enqueuing for a retry.")
-                addInvoiceToRetryList()
+                addInvoiceToRetryList(invoice)
             }
         }
     }
@@ -44,14 +44,21 @@ class BillingService( private val paymentProvider: PaymentProvider, private val 
      */
     fun escalate(invoice: Invoice, escalationType: EscalationType) {
         when (escalationType) {
-            EscalationType.CUSTOMER_NOT_FOUND ->
+            EscalationType.CUSTOMER_NOT_FOUND -> {
                 // update the `valid` column on the invoice table
                 dal.updateInvoiceValidity(invoice.id, false)
-            EscalationType.CURRENCY_MISMATCH ->
+            }
+            EscalationType.CURRENCY_MISMATCH -> {
                 logger.debug("Currency mismatch for the invoice: ${invoice.id}, " +
                         "setting the invoice currency to that on the customer table.")
-                addInvoiceToRetryList(invoice)
+                handleCurrencyMismatch(invoice)
+            }
         }
+    }
+
+    fun handleCurrencyMismatch(invoice: Invoice) {
+        dal.updateInvoiceCurrency(invoice.id)
+        addInvoiceToRetryList(invoice)
     }
 
     fun addInvoiceToRetryList(invoice: Invoice) {}
