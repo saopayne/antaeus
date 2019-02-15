@@ -22,19 +22,22 @@ class BillingService( private val paymentProvider: PaymentProvider, private val 
 
     fun chargeInvoicesInList(invoiceList: List<Invoice>, retry = false) {
         invoiceList.forEach { invoice ->
-            // ideally, each charge should run in a sequential manner for a start but coroutines can be explored
-            try {
-                val isChargeSuccessful = paymentProvider.charge(invoice)
-                if (isChargeSuccessful) dal.updateInvoiceStatus(invoice.id, InvoiceStatus.PAID)
-            } catch (nfException: CustomerNotFoundException) {
-                escalate(invoice, EscalationType.CUSTOMER_NOT_FOUND)
-            } catch (mismatchException: CurrencyMismatchException) {
-                escalate(invoice, EscalationType.CURRENCY_MISMATCH)
-            } catch (networkException: NetworkException) {
-                logger.debug("Network error while charging invoice: ${invoice.id}, enqueuing for a retry.")
-                if (!retry) addInvoiceToRetryList(invoice)
+            launch {
+                try {
+                    val isChargeSuccessful = paymentProvider.charge(invoice)
+                    if (isChargeSuccessful) dal.updateInvoiceStatus(invoice.id, InvoiceStatus.PAID)
+                } catch (nfException: CustomerNotFoundException) {
+                    escalate(invoice, EscalationType.CUSTOMER_NOT_FOUND)
+                } catch (mismatchException: CurrencyMismatchException) {
+                    escalate(invoice, EscalationType.CURRENCY_MISMATCH)
+                } catch (networkException: NetworkException) {
+                    logger.debug("Network error while charging invoice: ${invoice.id}, enqueuing for a retry.")
+                    if (!retry) addInvoiceToRetryList(invoice)
+                }
             }
         }
+        // try previously failed charges
+        retryFailedInvoices()
     }
 
     /**

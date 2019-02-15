@@ -1,24 +1,27 @@
 ## Initial Thoughts
 
-A naive approach that would easily be defeated in a wrestle with Antaeus would be:
+An approach that I suppose won't be easily defeated in a wrestle with Antaeus would be:
 1. Have a schedule that's triggered on the first of the month at a hour that then runs a long running service
    to charge invoices with PENDING status.
 2. For each pending invoice, attempt a charge for the invoice with:
 
       Throw exceptions :-
       - Throw CustomerNotFoundException when no customer with id is found.
-        + Escalate this to an agent
+        + Escalate this to an admin who can manually rectify this but I've decided to mark the invoice as invalid.
       - Throw CurrencyMismatchException when the currencies from invoice and customers don't match.
-        + Escalate this to an agent
+        + Escalate this to an admin would be ideal for further investigation. However, I've decided to assign the currency 
+        on the customer table to the invoice currency. 
       - Throw NetworkException when a network error occurs.
-        + Add a retry mechanism for 2 more times before escalating to an agent
+        + Add a retry mechanism for one more time before escalating to an agent.
       
       Return boolean :-
       
       - True if the account was successfully charged.
           + Update the invoice status as PAID 
       - False if the account balance of the customer is not up to to the invoice amount.
-          + Leave invoice status as PENDING         
+          + Leave invoice status as PENDING   
+3.           
+      
                 
 ## Antaeus
 
