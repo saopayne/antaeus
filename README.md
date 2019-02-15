@@ -19,8 +19,9 @@ An approach that I suppose won't be easily defeated in a wrestle with Antaeus wo
       - True if the account was successfully charged.
           + Update the invoice status as PAID 
       - False if the account balance of the customer is not up to to the invoice amount.
-          + Leave invoice status as PENDING   
-3.           
+          + Leave invoice status as PENDING
+             
+3. For each invoice charge process, run in a separate coroutines which are cheap to spin and doesn't hurt performance that much.          
       
                 
 ## Antaeus
