@@ -13,6 +13,7 @@ An approach that I suppose won't be easily defeated in a wrestle with Antaeus wo
         on the customer table to the invoice currency. 
       - Throw NetworkException when a network error occurs.
         + Add a retry mechanism for one more time before escalating to an agent.
+        + Ideally, this should go into a messaging queue, RabbitMQ or a related service.
       
       Return boolean :-
       
@@ -21,7 +22,11 @@ An approach that I suppose won't be easily defeated in a wrestle with Antaeus wo
       - False if the account balance of the customer is not up to to the invoice amount.
           + Leave invoice status as PENDING
              
-3. For each invoice charge process, run in a separate coroutines which are cheap to spin and doesn't hurt performance that much.          
+3. For each invoice charge process, run in a separate coroutines which are cheap to spin and doesn't hurt performance that much.
+
+#### Domain Changes
+- Add `valid` to Invoice table which defaults to true for a new invoice.
+This field shows which invoice we've marked as invalid and should be dropped subsequently.           
       
                 
 ## Antaeus

@@ -8,21 +8,29 @@ import io.pleo.antaeus.data.AntaeusDal
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import mu.KLogging
+import kotlinx.coroutines.*
 
 class BillingService( private val paymentProvider: PaymentProvider, private val dal: AntaeusDal ) {
 
     companion object: KLogging()
 
-    val retryInvoiceList = mutableListOf<Invoice>()
+    val retryInvoiceList = mutableListOf<Invoice>() // this mimics a message queue temporarily
 
     fun chargeInvoices() {
+
         val dueInvoiceList = dal.fetchDueInvoices()
         chargeInvoicesInList(dueInvoiceList)
+
+        if (retryInvoiceList.count() > 0) {
+            // try previously failed charges
+            logger.debug("Retrying failed invoice charges for $${retryInvoiceList.size()} items")
+            retryFailedInvoices()
+        }
     }
 
-    fun chargeInvoicesInList(invoiceList: List<Invoice>, retry = false) {
+    fun chargeInvoicesInList(invoiceList: List<Invoice>, retry: Boolean = false) {
         invoiceList.forEach { invoice ->
-            launch {
+            GlobalScope.launch {
                 try {
                     val isChargeSuccessful = paymentProvider.charge(invoice)
                     if (isChargeSuccessful) dal.updateInvoiceStatus(invoice.id, InvoiceStatus.PAID)
@@ -36,8 +44,6 @@ class BillingService( private val paymentProvider: PaymentProvider, private val 
                 }
             }
         }
-        // try previously failed charges
-        retryFailedInvoices()
     }
 
     /**
