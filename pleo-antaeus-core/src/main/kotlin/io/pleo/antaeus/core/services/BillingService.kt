@@ -42,6 +42,9 @@ class BillingService(
         val dueInvoiceList = dal.fetchDueInvoices()
         chargeInvoicesInList(dueInvoiceList)
 
+        // sleep for 3 minutes before retrying previously failed invoices
+        delay(180 * 1000L)
+
         if (retryInvoiceList.count() > 0) {
             // try previously failed charges just once
             this.logger.info("Retrying failed invoice charges for $${retryInvoiceList.count()} items")
