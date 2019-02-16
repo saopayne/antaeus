@@ -16,6 +16,8 @@ import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
 import io.pleo.antaeus.core.external.PaymentProvider
+import io.pleo.antaeus.core.helpers.DateTimeProvider
+import io.pleo.antaeus.core.helpers.Logger
 import io.pleo.antaeus.core.services.BillingService
 import io.pleo.antaeus.core.services.BillingService.EscalationType
 import java.math.BigDecimal
@@ -63,7 +65,22 @@ class BillingServiceTest {
         every { charge(any())} returns true
     }
 
-    private val billingService = BillingService(paymentProvider = paymentProvider, dal = dal)
+    private val dateTimeProvider = mockk<DateTimeProvider> {
+        every { isFirstDayOfMonth()} returns true
+    }
+
+    private val logger = mockk<Logger> {
+        every { info(any())} returns Unit
+        every { warn(any())} returns Unit
+        every { error(any())} returns Unit
+        every { debug(any())} returns Unit
+    }
+
+    private val billingService = BillingService(
+            paymentProvider = paymentProvider,
+            dal = dal,
+            dateTimeProvider = dateTimeProvider,
+            logger = logger)
 
     @Test
     fun `test that the escalate function updates invoice validity when customer is not found`() {

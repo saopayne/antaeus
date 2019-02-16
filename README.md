@@ -3,7 +3,10 @@
 An approach that I suppose won't be easily defeated in a wrestle with Antaeus would be:
 1. Have a schedule that's triggered on the first of the month at a hour that then runs a long running service
    to charge invoices with PENDING status.
-2. For each pending invoice, attempt a charge for the invoice with:
+
+2. If the date current invocation time is not the first which shouldn't, it delays the run until the next 1st of the month.   
+
+3. For each pending invoice, attempt a charge for the invoice with:
 
       Throw exceptions :-
       - Throw CustomerNotFoundException when no customer with id is found.
@@ -22,9 +25,9 @@ An approach that I suppose won't be easily defeated in a wrestle with Antaeus wo
       - False if the account balance of the customer is not up to to the invoice amount.
           + Leave invoice status as PENDING
              
-3. For each invoice charge process, run in a separate coroutines which are cheap to spin and doesn't hurt performance that much.
+4. For each invoice charge process, run in a separate coroutines which are cheap to spin and doesn't hurt performance that much.
 
-4. Additional URL endpoint `$ curl http://localhost:7000/rest/v1/invoices/update` to manually test out the charging of all due invoices.
+5. Additional URL endpoint `$ curl http://localhost:7000/rest/v1/invoices/update` to manually test out the charging of all due invoices.
 
 #### Domain Changes
 - Add `valid` to Invoice table which defaults to true for a new invoice.
