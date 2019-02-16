@@ -13,7 +13,7 @@ An approach that I suppose won't be easily defeated in a wrestle with Antaeus wo
         on the customer table to the invoice currency. 
       - Throw NetworkException when a network error occurs.
         + Add a retry mechanism for one more time before escalating to an agent.
-        + Ideally, this should go into a messaging queue, RabbitMQ or a related service.
+        + Ideally, this should go into a messaging queue, AMQP since the messages are important and the cost of losing any of messages is far higher that not achieving an optimal throughput
       
       Return boolean :-
       
