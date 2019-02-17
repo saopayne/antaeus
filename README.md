@@ -1,6 +1,19 @@
-## Initial Thoughts
+#### Submission By: Ademola Oyewale (saopayne[at]gmail.com)  
 
-An approach that I suppose won't be easily defeated in a wrestle with Antaeus would be:
+##### Background
+
+This is my first backend project using Kotlin. I have played around with Kotlin for Android development and I must confess, I had some challenges
+setting this up locally and I had to depend on a lot of googling and documentation help since my autocomplete feature didn't work(maybe by Antaeus himself :D) and 
+syntax highlighting to some extent didn't.
+
+Nevertheless, I have found the project totally worth my time!
+
+##### Summary of Solution
+
+The billing service is started once the app runs and checks if it's the first day of the month to charge invoices.
+To charge the invoices, it runs them with coroutines with the intention of executing this as fast as possible with high concurrency. 
+
+##### Detailed Outline of Solution
 1. Have a schedule that's triggered on the first of the month at a hour that then runs a long running service
    to charge invoices with PENDING status.
 
@@ -8,18 +21,17 @@ An approach that I suppose won't be easily defeated in a wrestle with Antaeus wo
 
 3. For each pending invoice, attempt a charge for the invoice with:
 
-      Throw exceptions :-
       - Throw CustomerNotFoundException when no customer with id is found.
         + Escalate this to an admin who can manually rectify this but I've decided to mark the invoice as invalid.
+        
       - Throw CurrencyMismatchException when the currencies from invoice and customers don't match.
         + Escalate this to an admin would be ideal for further investigation. However, I've decided to assign the currency 
-        on the customer table to the invoice currency. 
+        on the customer table to the invoice currency.
+         
       - Throw NetworkException when a network error occurs.
         + Add a retry mechanism for one more time before escalating to an agent.
         + Ideally, this should go into a messaging queue, AMQP since the messages are important and the cost of losing any of messages is far higher that not achieving an optimal throughput
-      
-      Return boolean :-
-      
+            
       - True if the account was successfully charged.
           + Update the invoice status as PAID 
       - False if the account balance of the customer is not up to to the invoice amount.
@@ -29,10 +41,17 @@ An approach that I suppose won't be easily defeated in a wrestle with Antaeus wo
 
 5. Additional URL endpoint `$ curl http://localhost:7000/rest/v1/invoices/update` to manually test out the charging of all due invoices.
 
-#### Domain Changes
+##### Changes Made
+I added a column to the invoice table to track validity of each invoice:
+
 - Add `valid` to Invoice table which defaults to true for a new invoice.
 This field shows which invoice we've marked as invalid and should be dropped subsequently.           
       
+##### Possible Improvements
+- Integrate a service that converts currency which accepts (value, currency, newCurrency) and returns (value, currency)
+. This will increase the robustness against value losses.
+- Increase the parallelism of the invoice jobs. There's a room for improvement here as more customers get added, there's a potential bottleneck lurking.
+- Add a proper job queue which allows for retries of failed jobs (displayable via UI) using some exponential backoff or even manual. An overkill here might be using AirFlow :)      
                 
 ## Antaeus
 
