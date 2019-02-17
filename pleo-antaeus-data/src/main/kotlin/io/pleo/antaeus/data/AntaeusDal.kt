@@ -107,10 +107,8 @@ class AntaeusDal(private val db: Database) {
         return false
     }
 
-    fun updateInvoiceCurrency(id: Int) {
+    fun updateInvoiceCurrencyWithCustomer(id: Int, customer: Customer) {
         var invoice = fetchInvoice(id)
-        var customer = fetchCustomer(invoice?.customerId!!)
-
         if (invoice != null && customer != null) {
             val id = transaction(db) {
                 InvoiceTable

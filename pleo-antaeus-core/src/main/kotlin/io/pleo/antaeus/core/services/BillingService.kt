@@ -6,6 +6,8 @@ import io.pleo.antaeus.core.exceptions.NetworkException
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.core.helpers.DateTimeProvider
 import io.pleo.antaeus.core.helpers.Logger
+import io.pleo.antaeus.core.services.InvoiceService
+import io.pleo.antaeus.core.services.CustomerService
 import io.pleo.antaeus.data.AntaeusDal
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
@@ -14,13 +16,16 @@ import kotlinx.coroutines.*
 import java.time.Duration
 
 class BillingService(
+        private val invoiceService: InvoiceService,
+        private val customerService: CustomerService,
         private val paymentProvider: PaymentProvider,
-        private val dal: AntaeusDal,
         private val dateTimeProvider: DateTimeProvider,
         private val logger: Logger) {
 
     private var job : Job? = null
-    val retryInvoiceList = mutableListOf<Invoice>() // this mimics a message queue temporarily
+
+    // this mimics a message queue temporarily
+    val retryInvoiceList = mutableListOf<Invoice>()
 
     fun exec() {
 
@@ -29,7 +34,7 @@ class BillingService(
         job = GlobalScope.launch {
             if (!dateTimeProvider.isFirstDayOfMonth()) {
                 val nextRunTimeInSeconds = getDurationUntilNextRun()
-                logger.info ("Suspending job to charge invoices for $nextRunTimeInSeconds seconds until the next first of the month")
+                logger.info ("Suspending job to charge invoices for $nextRunTimeInSeconds seconds which is the next first day of the month")
                 delay(nextRunTimeInSeconds)
             } else {
                 chargeInvoices()
@@ -37,39 +42,43 @@ class BillingService(
         }
     }
 
-    fun chargeInvoices() {
+    protected open suspend fun chargeInvoices() {
 
-        val dueInvoiceList = dal.fetchDueInvoices()
-        chargeInvoicesInList(dueInvoiceList)
-
-        // sleep for 3 minutes before retrying previously failed invoices
-        delay(180 * 1000L)
+        chargeInvoicesInList()
 
         if (retryInvoiceList.count() > 0) {
-            // try previously failed charges just once
+            val retryDelayTimeInSec = 180
+            delay(retryDelayTimeInSec * 1000L)
+
+            // try previously failed charges just once with a delay of some seconds
             this.logger.info("Retrying failed invoice charges for $${retryInvoiceList.count()} items")
             retryFailedInvoices()
         }
     }
 
-    fun chargeInvoicesInList(invoiceList: List<Invoice>, retry: Boolean = false) {
-        invoiceList.forEach { invoice ->
+    suspend fun chargeInvoicesInList(retry: Boolean = false) {
+
+        var dueInvoiceList = invoiceService.fetchAllDueInvoices()
+
+        if (retry) dueInvoiceList = retryInvoiceList
+
+        dueInvoiceList.forEach { invoice ->
 
             this.logger.info("starting charging process for invoice: ${invoice.id} ")
 
             try {
                 val isChargeSuccessful = paymentProvider.charge(invoice)
-                if (isChargeSuccessful) dal.updateInvoiceStatus(invoice.id, InvoiceStatus.PAID)
+                if (isChargeSuccessful) invoiceService.updateInvoiceStatus(invoice.id, InvoiceStatus.PAID)
             } catch (e: CustomerNotFoundException) {
-                logger.debug("Failed to charge invoice ${invoice.id} as the customer ${invoice.customerId} wasn't found")
+                this.logger.debug("Failed to charge invoice ${invoice.id} as the customer ${invoice.customerId} wasn't found")
                 escalate(invoice, EscalationType.CUSTOMER_NOT_FOUND)
             } catch (e: CurrencyMismatchException) {
-                val customer = dal.fetchCustomer(invoice.customerId)
-                logger.debug("Failed to charge invoice ${invoice.id} as there's a currency mismatch with customer currency ${customer?.currency}" +
+                val customer = customerService.fetch(invoice.customerId)
+                this.logger.debug("Failed to charge invoice ${invoice.id} as there's a currency mismatch with customer currency ${customer?.currency}" +
                         " and invoice currency ${invoice.amount.currency}")
                 escalate(invoice, EscalationType.CURRENCY_MISMATCH)
             } catch (e: NetworkException) {
-                logger.debug("Failed to charge invoice ${invoice.id}due to Network error, enqueuing for a retry.")
+                this.logger.debug("Failed to charge invoice ${invoice.id}due to Network error, enqueuing for a retry.")
                 if (!retry) addInvoiceToRetryList(invoice)
             }
         }
@@ -85,19 +94,31 @@ class BillingService(
     fun escalate(invoice: Invoice, escalationType: EscalationType) {
         when (escalationType) {
             EscalationType.CUSTOMER_NOT_FOUND -> {
-                // update the `valid` column on the invoice table
-                dal.updateInvoiceValidity(invoice.id, false)
+                handleCustomerNotFoundException(invoice)
             }
             EscalationType.CURRENCY_MISMATCH -> {
-                logger.warn("Currency mismatch for the invoice: ${invoice.id}, " +
-                        "setting the invoice currency to that on the customer table.")
-                handleCurrencyMismatch(invoice)
+                handleCurrencyMismatchException(invoice)
             }
         }
     }
 
-    fun handleCurrencyMismatch(invoice: Invoice) {
-        dal.updateInvoiceCurrency(invoice.id)
+    /**
+     * It will be better for a human to investigate the cause of this but tentatively,
+     * update the `valid` column on the invoice table
+     */
+    fun handleCustomerNotFoundException(invoice: Invoice) {
+        this.logger.warn("Customer not found for the invoice: ${invoice.id}, marking the invoice as invalid.")
+        invoiceService.updateInvoiceValidity(invoice.id, false)
+    }
+
+    /**
+     * This should be open to an in-house check to investigate the cause of this.
+     * update the currency of the invoice to the one that exists on the customer table.
+     */
+    fun handleCurrencyMismatchException(invoice: Invoice) {
+        this.logger.warn("Currency mismatch for the invoice: ${invoice.id}, setting the invoice currency to that of the customer table.")
+        val customer = customerService.fetch(invoice.customerId)
+        invoiceService.updateInvoiceCurrencyWithCustomer(invoice.id, customer)
         addInvoiceToRetryList(invoice)
     }
 
@@ -105,9 +126,11 @@ class BillingService(
         retryInvoiceList.add(invoice)
     }
 
-    // retry failed invoices just once which which addresses currency mismatch and network errors
-    fun retryFailedInvoices() {
-        chargeInvoicesInList(retryInvoiceList, true)
+    /**
+     * retry failed invoices just once which which addresses currency mismatch and network errors
+     */
+    protected open suspend fun retryFailedInvoices() {
+        chargeInvoicesInList(true)
     }
 
     /**
@@ -115,7 +138,18 @@ class BillingService(
      */
     private fun getDurationUntilNextRun(): Long {
         val nextFirstDayOfMonth = this.dateTimeProvider.nextFirstDayOfMonth()
-        return Duration.between(nextFirstDayOfMonth, dateTimeProvider.now()).toMillis() * 1000L
+        return Duration.between(dateTimeProvider.now(), nextFirstDayOfMonth).toMillis() / 1000L
+    }
+
+    fun stop() {
+        this.logger.info("terminating billing service")
+
+        job?.cancel()
+        runBlocking {
+            job?.join()
+        }
+
+        this.logger.info("billing service successfully stopped")
     }
 
     enum class EscalationType {

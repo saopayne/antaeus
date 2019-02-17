@@ -12,6 +12,7 @@ import io.pleo.antaeus.core.services.CustomerService
 import io.pleo.antaeus.core.services.InvoiceService
 import io.pleo.antaeus.core.services.BillingService
 import mu.KotlinLogging
+import kotlinx.coroutines.runBlocking
 
 private val logger = KotlinLogging.logger {}
 
@@ -58,9 +59,10 @@ class AntaeusRest (
                        // URL: /rest/v1/invoices/update
                        path("update") {
                            get {
-                               it.json(billingService.chargeInvoices())
+                               runBlocking {
+                                   it.json(billingService.chargeInvoicesInList())
+                               }
                            }
-
                        }
 
                        // URL: /rest/v1/invoices
