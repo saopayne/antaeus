@@ -1,6 +1,6 @@
-#### Submission By: Ademola Oyewale (saopayne[at]gmail.com)  
+## Submission By: Ademola Oyewale (saopayne[at]gmail.com)  
 
-##### Background
+### Background
 
 This is my first backend project using Kotlin. I have played around with Kotlin for Android development and I must confess, I had some challenges
 setting this up locally and I had to depend on a lot of googling and documentation help since my autocomplete feature didn't work(maybe by Antaeus himself :D) and 
@@ -8,12 +8,12 @@ syntax highlighting to some extent didn't.
 
 Nevertheless, I have found the project totally worth my time!
 
-##### Summary of Solution
+### Summary of Solution
 
 The billing service is started once the app runs and checks if it's the first day of the month to charge invoices.
 To charge the invoices, it runs them with coroutines with the intention of executing this as fast as possible with high concurrency. 
 
-##### Detailed Outline of Solution
+### Detailed Outline of Solution
 1. Have a schedule that's triggered on the first of the month at a hour that then runs a long running service
    to charge invoices with PENDING status.
 
@@ -41,13 +41,13 @@ To charge the invoices, it runs them with coroutines with the intention of execu
 
 5. Additional URL endpoint `$ curl http://localhost:7000/rest/v1/invoices/update` to manually test out the charging of all due invoices.
 
-##### Changes Made
+### Changes Made
 I added a column to the invoice table to track validity of each invoice:
 
 - Add `valid` to Invoice table which defaults to true for a new invoice.
 This field shows which invoice we've marked as invalid and should be dropped subsequently.           
       
-##### Possible Improvements
+### Possible Improvements
 - Integrate a service that converts currency which accepts (value, currency, newCurrency) and returns (value, currency)
 . This will increase the robustness against value losses.
 - Increase the parallelism of the invoice jobs. There's a room for improvement here as more customers get added, there's a potential bottleneck lurking.
