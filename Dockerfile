@@ -9,12 +9,11 @@ EXPOSE 7000
 # Setup app user.
 RUN useradd --home /home/pleo --shell /bin/false pleo
 
-# Switch to app user.
-USER pleo
+# Switch to app workdir.
 WORKDIR /home/pleo
 
 # Copy over source code.
-COPY --chown=pleo:pleo . /home/pleo
+COPY . /home/pleo
 
 # When the container starts: build, test and run the app.
 CMD ./gradlew build && ./gradlew test && ./gradlew run
