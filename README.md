@@ -1,5 +1,3 @@
-## Submission By: Ademola Oyewale (saopayne[at]gmail.com)  
-
 ### Background
 
 This is my first backend project using Kotlin. I have played around with Kotlin for Android development and I must confess, I had some challenges
