@@ -47,7 +47,7 @@ If you use homebrew on MacOS `brew install sqlite`.
 Install docker for your platform
 
 ```
-./docker-start.sh
+make docker-run
 ```
 
 ### App Structure
