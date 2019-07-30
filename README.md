@@ -19,7 +19,7 @@ Happy hacking 😁!
 ## Developing
 
 Requirements:
-- >= Java 11 environment
+- \>= Java 11 environment
 - Ideally: a java IDE but if you're wild notepad does the job
 
 ### Building
