@@ -1,6 +1,6 @@
 ## Antaeus
 
-> Antaeus (/ænˈtiːəs/), in Greek mythology, a giant of Libya, the son of the sea god Poseidon and the Earth goddess Gaia. He compelled all strangers who were passing through the country to wrestle with him. Whenever Antaeus touched the Earth (his mother), his strength was renewed, so that even if thrown to the ground, he was invincible. Heracles, in combat with him, discovered the source of his strength and, lifting him up from Earth, crushed him to death.
+Antaeus (/ænˈtiːəs/), in Greek mythology, a giant of Libya, the son of the sea god Poseidon and the Earth goddess Gaia. He compelled all strangers who were passing through the country to wrestle with him. Whenever Antaeus touched the Earth (his mother), his strength was renewed, so that even if thrown to the ground, he was invincible. Heracles, in combat with him, discovered the source of his strength and, lifting him up from Earth, crushed him to death.
 
 Welcome to our challenge.
 
@@ -14,13 +14,10 @@ Fork this repo with your solution. Ideally, we'd like to see your progression th
 
 Please let us know how long the challenge takes you. We're not looking for how speedy or lengthy you are. It's just really to give us a clearer idea of what you've produced in the time you decided to take. Feel free to go as big or as small as you want.
 
-Happy hacking 😁!
-
 ## Developing
 
 Requirements:
 - \>= Java 11 environment
-- Ideally: a java IDE but if you're wild notepad does the job
 
 ### Building
 
@@ -30,7 +27,16 @@ Requirements:
 
 ### Running
 
-There are 2 options for running Anteus. You either need libsqlite3 or docker. Docker is easier but more invasive to setup.
+There are 2 options for running Anteus. You either need libsqlite3 or docker. Docker is easier but requires some docker knowledge. We do recommend docker though.
+
+
+*Running through docker*
+
+Install docker for your platform
+
+```
+make docker-run
+```
 
 *Running Natively*
 
@@ -42,19 +48,12 @@ If you use homebrew on MacOS `brew install sqlite`.
 ./gradlew run
 ```
 
-*Running through docker*
-
-Install docker for your platform
-
-```
-make docker-run
-```
 
 ### App Structure
 The code given is structured as follows. Feel free however to modify the structure to fit your needs.
 ```
 ├── pleo-antaeus-app
-|       main() & dependency injection initialization
+|       main() & initialization
 |
 ├── pleo-antaeus-core
 |       This is probably where you will introduce most of your new code.
@@ -71,10 +70,12 @@ The code given is structured as follows. Feel free however to modify the structu
 └──
 ```
 
-### Main Libraries currently in use
-* [Sqlite3](https://sqlite.org/index.html) - Database storage
+### Main Libraries and dependencies
 * [Exposed](https://github.com/JetBrains/Exposed) - DSL for type-safe SQL
 * [Javalin](https://javalin.io/) - Simple web framework (for REST)
 * [kotlin-logging](https://github.com/MicroUtils/kotlin-logging) - Simple logging framework for Kotlin
 * [JUnit 5](https://junit.org/junit5/) - Testing framework
 * [Mockk](https://mockk.io/) - Mocking library
+* [Sqlite3](https://sqlite.org/index.html) - Database storage engine
+
+Happy hacking 😁!
