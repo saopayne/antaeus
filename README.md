@@ -30,7 +30,7 @@ Requirements:
 
 ### Running
 
-There are 2 options for running anteus. You either need libsqlite3 or docker. Docker is easier but more invasive to setup.
+There are 2 options for running Anteus. You either need libsqlite3 or docker. Docker is easier but more invasive to setup.
 
 *Running Natively*
 
