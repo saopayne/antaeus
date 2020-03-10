@@ -2,8 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     base
-    kotlin("jvm") version "1.3.21" apply false
-    id("org.jmailen.kotlinter") version "1.20.1"
+    kotlin("jvm") version "1.3.70" apply false
 }
 
 allprojects {
@@ -16,15 +15,10 @@ allprojects {
     }
 
     tasks.withType<KotlinCompile>().configureEach {
-        kotlinOptions.jvmTarget = "1.8"
-        kotlinOptions.suppressWarnings = true
+        kotlinOptions.jvmTarget = "11"
     }
 
     tasks.withType<Test> {
         useJUnitPlatform()
     }
-}
-
-kotlinter {
-    continuationIndentSize = 4
 }
