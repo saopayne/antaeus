@@ -96,3 +96,30 @@ The code given is structured as follows. Feel free however to modify the structu
 * [Sqlite3](https://sqlite.org/index.html) - Database storage engine
 
 Happy hacking 😁!
+
+### My Thought Process
+
+The main objective: We have both customers and invoices, and we need to schedule payments such that each customer is billed for any 
+invoices linked to them on the first of each month. There is a few approaches that can be taken here, but what I think I will do here
+is basically filter out all PAID invoices, then group them all by customerId before preparing each invoice where neccesarry and billing
+each customer with their invoices. I will handle the bulk of this logic in the BillingService class.
+
+Additional objectives: Looking at the list of exceptions shows me that there are additional requirements  within the billing cycle
+which have not been explicity stated but need to be addressed, mostly with extra logic in CustomerService and InvoiceService.
+- CurrencyMismatchException: Both the invoice and customer have a currency field which we can guess need to be the same during billing
+  otherwise this exception is thrown. I will need to have additional logic in BillingService to prepare invoices prior to billing which 
+  updates the currency in the invoices to match the customers native currency. For the purposes of this challenge we will presume that
+  all currencies have a 1:1 exchange rate.
+- CustomerNotFoundException: Each invoice has an assigned customer, and during the filtering and grouping of invoices we may find one 
+  where the customerId does not match any known customer record. This exception would need to trigger an alert of some kind, as having
+  unpaid invoices which is unbillable is a big issue. For the purposes of this challenge I will trigger an "alert" to an imaginary 
+  external service which we presume raises a ticket for resolution. I will also add a createCustomer function to the CustomerService
+  just to provide a way to resolve the issue, assuming we have all the customers details to create a new record.
+- InvoiceNotFoundException: This particular exception is unlikely to happen during the billing cycle, so we can assume where this might
+  happen is during a lookup for a specific invoice which exists as a physical document but does not have a record yet. I will add a function
+  to InvoiceService to create an invoice which will resolve this, and will use a unit test to demo the handling of the exception.
+
+I will purposely leverage only existing entities and fields, avoiding the creation of new ones as I believe that this increases the 
+comlexity of the project beyond the scope of the challenge. I do see places where expanding out fields within some entities would allow
+greater control and flexibility within the billing process. Eg. InvoiceStatus having only 2 states, PENDING and PAID, would lead to too
+much ambiguity in a real world solution.
