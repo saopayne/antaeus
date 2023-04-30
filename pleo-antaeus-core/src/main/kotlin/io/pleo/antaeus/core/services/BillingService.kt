@@ -1,5 +1,8 @@
 package io.pleo.antaeus.core.services
 
+import io.pleo.antaeus.core.exceptions.CurrencyMismatchException
+import io.pleo.antaeus.core.exceptions.CustomerNotFoundException
+import io.pleo.antaeus.core.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.models.Customer
 import io.pleo.antaeus.models.Invoice
@@ -7,8 +10,20 @@ import io.pleo.antaeus.models.InvoiceStatus
 
 class BillingService (private val invoiceService: InvoiceService) : PaymentProvider {
 
+    /*
+       Here we override the charge method from the PaymentProvider interface, but for this challenge we will just return
+       true to simulate calls to an external service. Additionally we can catch specific exceptions here and handle them individually.
+     */
     override fun charge(invoice: Invoice): Boolean {
-        TODO("Not yet implemented")
+        try {
+            return true
+        } catch (exception: CustomerNotFoundException) {
+            return false
+        } catch (exception: CurrencyMismatchException) {
+            return false
+        } catch (exception: InvoiceNotFoundException) {
+            return false
+        }
     }
 
     /*

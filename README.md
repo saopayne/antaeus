@@ -126,3 +126,9 @@ much ambiguity in a real world solution.
 
 I will be using rest endpoints for quickly testing and demoing some functionality on a complete data collection (rather than mocked data 
 in unit tests), but this is really just for the purpose of the challenge and may not be something needing to be exposed through an api in reality.
+
+The PaymentProvider interface provides a function for us to override in the BillingService, which simulates a call to an external service and 
+would let our application know if a payment was successfull. Additionally this is also where we could catch the different exceptions mentioned
+above and handle them with an appropriate action before letting our application know the payment was unsuccessfull. For the purposes of this chaallenge 
+I will keep this simple and show where this function would be overridden, but will not be implememnting any logic other that to return true and 
+indicate a successfull payment.
