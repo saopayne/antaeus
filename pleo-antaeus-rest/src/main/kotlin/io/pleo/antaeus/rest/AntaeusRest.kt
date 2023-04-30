@@ -10,6 +10,7 @@ import io.javalin.apibuilder.ApiBuilder.path
 import io.pleo.antaeus.core.exceptions.EntityNotFoundException
 import io.pleo.antaeus.core.services.CustomerService
 import io.pleo.antaeus.core.services.InvoiceService
+import io.pleo.antaeus.models.InvoiceStatus
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -65,6 +66,12 @@ class AntaeusRest(
                         get(":id") {
                             it.json(invoiceService.fetch(it.pathParam("id").toInt()))
                         }
+                            path("status") {
+                                // URL: /rest/v1/invoices/status/{:status}
+                                get(":status") {
+                                    it.json(invoiceService.fetchByStatus(it.pathParam("status").toString()));
+                                }
+                            }
                     }
 
                     path("customers") {

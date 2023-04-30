@@ -17,7 +17,7 @@ class InvoiceServiceTest {
 
     private val mockInvoice1 = Invoice(1,11, Money((BigDecimal(100.23)), Currency.EUR), InvoiceStatus.PAID)
     private val mockInvoice2 = Invoice(2,12, Money((BigDecimal(100.23)), Currency.GBP), InvoiceStatus.PENDING)
-    private val mockInvoice3 = Invoice(3,13, Money((BigDecimal(100.23)), Currency.USD), InvoiceStatus.PAID)
+    private val mockInvoice3 = Invoice(3,13, Money((BigDecimal(100.23)), Currency.USD), InvoiceStatus.PENDING)
     private val mockInvoice4 = Invoice(4,14, Money((BigDecimal(100.23)), Currency.DKK), InvoiceStatus.PENDING)
 
     private val mockInvoiceList = arrayListOf<Invoice>(mockInvoice1, mockInvoice2, mockInvoice3, mockInvoice4)
@@ -51,7 +51,7 @@ class InvoiceServiceTest {
 
     @Test
     fun `will return all pending invoices`() {
-        // take list of both pending and paid invoices, return only pending
+        assertEquals(3, invoiceService.fetchByStatus("PENDING").size);
     }
 
     @Test
