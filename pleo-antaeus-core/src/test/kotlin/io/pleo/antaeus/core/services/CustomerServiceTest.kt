@@ -20,4 +20,18 @@ class CustomerServiceTest {
             customerService.fetch(404)
         }
     }
+
+    @Test
+    fun `will return expected customer`() {
+
+    }
+
+    @Test
+    fun `will return all customers`() {
+
+    }
+
+
+
+
 }
