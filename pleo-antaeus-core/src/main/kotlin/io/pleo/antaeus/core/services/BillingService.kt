@@ -32,6 +32,13 @@ class BillingService (private val invoiceService: InvoiceService) : PaymentProvi
         return invoiceService.updateStatus(invoiceId, InvoiceStatus.PENDING.toString())
     }
 
+    fun getAllPendingInvoicesGroupedByCustomerId() : List<List<Invoice>> {
+        return invoiceService.fetchByStatus(InvoiceStatus.PENDING.toString())
+            .groupBy { it.customerId }.map { it.value }
+    }
+
+
+
 
 
 

@@ -45,4 +45,9 @@ class BillingServiceTest {
         assertEquals(1,billingService.billIndividualCustomer(11).size)
         assertEquals(3,billingService.billIndividualCustomer(12).size)
     }
+
+    @Test
+    fun `will return list of invoices grouped by customer`() {
+        assertEquals(2, billingService.getAllPendingInvoicesGroupedByCustomerId().size)
+    }
 }
