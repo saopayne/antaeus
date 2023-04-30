@@ -21,4 +21,8 @@ class InvoiceService(private val dal: AntaeusDal) {
     fun fetchByStatus(status: String): List<Invoice> {
         return dal.fetchInvoices().filter { invoice: Invoice -> invoice.status.toString().equals(status)  }
     }
+
+    fun updateStatus(id: Int, status: String) {
+        return dal.updateInvoiceStatus(id, status)
+    }
 }
