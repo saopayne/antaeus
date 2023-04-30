@@ -4,24 +4,29 @@ import io.pleo.antaeus.core.exceptions.CurrencyMismatchException
 import io.pleo.antaeus.core.exceptions.CustomerNotFoundException
 import io.pleo.antaeus.core.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.core.external.PaymentProvider
+import io.pleo.antaeus.models.Currency
 import io.pleo.antaeus.models.Customer
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 
-class BillingService (private val invoiceService: InvoiceService) : PaymentProvider {
+class BillingService (private val invoiceService: InvoiceService, private val customerService: CustomerService) : PaymentProvider {
 
     /*
        Here we override the charge method from the PaymentProvider interface, but for this challenge we will just return
-       true to simulate calls to an external service. Additionally we can catch specific exceptions here and handle them individually.
+       true to simulate calls to an external service.We can catch specific exceptions here and handle them individually.
+       I have included a comment to briefly describe what I would do in each exeption in a real implementation
      */
     override fun charge(invoice: Invoice): Boolean {
         try {
             return true
         } catch (exception: CustomerNotFoundException) {
+            // trigger alert/ticket for manual intervention/investigation to resolve invoice with invalid customerId
             return false
         } catch (exception: CurrencyMismatchException) {
+            // call additional logic to update invoice currency to match what the customer uses
             return false
         } catch (exception: InvoiceNotFoundException) {
+            // trigger alert/ticket for manual intervention/investigation to resolve by creating missing invoice record
             return false
         }
     }
@@ -31,49 +36,53 @@ class BillingService (private val invoiceService: InvoiceService) : PaymentProvi
         other scheduling service, but for the challenge we manually trigger this with a rest call
      */
     fun runScheduledBillingCycle() {
+        val customerInvoices = invoiceService.getAllPendingInvoicesGroupedByCustomerId()
+        println(customerInvoices.size.toString() + " customers have been charged during this months billing cycle.")
 
+        for(invoices in customerInvoices) {
+            for (invoice in invoices) {
+                println("Starting billing for cutomer: id=" + invoice.customerId)
+
+                updateInvoiceCurrenciesToMatchCustomer(invoice)
+
+                if(charge(invoice)) {
+                    println("Invoice " + invoice.id + " charge success!")
+                    updateInvoiceStatusToPaid(invoice.id)
+                }else {
+                    println("Invoice " + invoice.id + " charge failure!")
+                }
+            }
+        }
     }
 
     /*
-        Will be called by runScheduledBillingCycle as it calls each individual group of invoices. There will also be a
-        rest endpoint to call this manually for demo purposes for this challenge
-     */
-    fun billIndividualCustomer(customerId: Int): List<Invoice> {
-        return invoiceService.fetchByStatus(InvoiceStatus.PENDING.toString())
-            .filter { invoice: Invoice -> invoice.customerId.equals(customerId) }
+     Additional function for a scenario where we might want to bill a single customer.
+     There will be a rest endpoint to call this manually for demo purposes for this challenge
+    */
+    fun billIndividualCustomer(customerId: Int) {
+        var customerInvoices = invoiceService.getAllPendingInvoicesForIndividualCustomer(customerId)
+        println("Customer " + customerId + " will be billed for " + customerInvoices.size + " invoices")
+        for(invoice in customerInvoices) {
+            updateInvoiceCurrenciesToMatchCustomer(invoice)
+
+            if(charge(invoice)) {
+                println("Invoice " + invoice.id + " charge success!")
+                updateInvoiceStatusToPaid(invoice.id)
+            }else {
+                println("Invoice " + invoice.id + " charge failure!")
+            }
+        }
+    }
+
+    fun updateInvoiceCurrenciesToMatchCustomer(invoice: Invoice) {
+        val customerCurrency = customerService.fetch(invoice.customerId).currency
+        // we do this check to avoid redundant db calls
+        if(customerCurrency != invoice.amount.currency) {
+            invoiceService.updateCurrency(invoice.id, customerCurrency.toString())
+        }
     }
 
     fun updateInvoiceStatusToPaid(invoiceId: Int) {
-        return invoiceService.updateStatus(invoiceId, InvoiceStatus.PENDING.toString())
+        return invoiceService.updateStatus(invoiceId, InvoiceStatus.PAID.toString())
     }
-
-    fun getAllPendingInvoicesGroupedByCustomerId() : List<List<Invoice>> {
-        return invoiceService.fetchByStatus(InvoiceStatus.PENDING.toString())
-            .groupBy { it.customerId }.map { it.value }
-    }
-
-
-
-
-
-
-
-
-
-// TODO - Add code e.g. here
-    /*  getting billing can be done 1 of 2 ways:
-        1. Go through each customer and search invoice by customerId AND status=PENDING
-        2. Filter list of all invoices with status=PENDING and group by customerId
-     */
-
-    // fetch all PENDING invoices
-
-    // bundle all PENDING invoices to specific customers
-    // - create exception to demo handling of CustomerNotFoundException?
-
-    // update invoice currencies to match customer currency
-    // - create exception to demo handling of CurrencyMismatchException
-
-    // create new invoices
-    // - create exception to demo handling of CustomerNotFoundException(create new customer)
 }

@@ -28,26 +28,8 @@ class BillingServiceTest {
         every { fetchByStatus(any()) } returns mockInvoiceList
     }
 
-    private val billingService = BillingService(invoiceService)
+    private val customerService = mockk<CustomerService>{}
 
-    @Test
-    fun `will throw if customer and invoice currencies do not match`() {
-        // throw currency mismatch exception
-    }
+    private val billingService = BillingService(invoiceService, customerService)
 
-    @Test
-    fun `will update invoice currency to match customer currency`() {
-        // lookup customer matching invoice, update invoice recored to match customer currency
-    }
-
-    @Test
-    fun `will return pending invoices for indivual customer`() {
-        assertEquals(1,billingService.billIndividualCustomer(11).size)
-        assertEquals(3,billingService.billIndividualCustomer(12).size)
-    }
-
-    @Test
-    fun `will return list of invoices grouped by customer`() {
-        assertEquals(2, billingService.getAllPendingInvoicesGroupedByCustomerId().size)
-    }
 }

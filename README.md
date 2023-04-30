@@ -132,3 +132,21 @@ would let our application know if a payment was successfull. Additionally this i
 above and handle them with an appropriate action before letting our application know the payment was unsuccessfull. For the purposes of this chaallenge 
 I will keep this simple and show where this function would be overridden, but will not be implememnting any logic other that to return true and 
 indicate a successfull payment.
+
+### Testing
+
+To see the billing service work you need to run the app normally as described above, then hit [this local endpoint](http://localhost:7000/rest/v1/billing) manually(something that would be run by our scheduled service in real world scenario)
+This will do several things: 
+- Run through all the pending invoices and group them by customerId
+- Update the currency on the invoices to match the customers local currency
+- Call the charge function from PaymentProvider to attempt payment (always succeeds for the challenge)
+- Update all invoice status from PENDING to PAID
+- Retun a json result of all the updated invoices grouped by customerId
+- Log the status of each invoice charging status & total customers being billed during the billing cycle
+
+Billing can also be done for individual customers by providing a customer id to the following endpoint: http://localhost:7000/rest/v1/billing/{:customerId} [example](http://localhost:7000/rest/v1/billing/24) 
+
+As running this will "pay" all pending invoices, running it a second time will do no further updates and will log 0 cutomers being billed
+as there are no more outstanding or PENDIng invoices. Restarting the app will reset this.
+
+There are also multiple unit tests provided for various functions in the service classes, running these will show a success.

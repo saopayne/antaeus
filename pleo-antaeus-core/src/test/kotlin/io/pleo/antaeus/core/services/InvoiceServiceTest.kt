@@ -15,12 +15,13 @@ import java.math.BigDecimal
 
 class InvoiceServiceTest {
 
-    private val mockInvoice1 = Invoice(1,11, Money((BigDecimal(100.23)), Currency.EUR), InvoiceStatus.PAID)
-    private val mockInvoice2 = Invoice(2,12, Money((BigDecimal(100.23)), Currency.GBP), InvoiceStatus.PENDING)
-    private val mockInvoice3 = Invoice(3,13, Money((BigDecimal(100.23)), Currency.USD), InvoiceStatus.PENDING)
-    private val mockInvoice4 = Invoice(4,14, Money((BigDecimal(100.23)), Currency.DKK), InvoiceStatus.PENDING)
+    private val mockInvoice1 = Invoice(1,13, Money((BigDecimal(100.23)), Currency.EUR), InvoiceStatus.PAID)
+    private val mockInvoice2 = Invoice(2,11, Money((BigDecimal(100.23)), Currency.GBP), InvoiceStatus.PENDING)
+    private val mockInvoice3 = Invoice(3,12, Money((BigDecimal(100.23)), Currency.USD), InvoiceStatus.PENDING)
+    private val mockInvoice4 = Invoice(4,12, Money((BigDecimal(100.23)), Currency.DKK), InvoiceStatus.PENDING)
+    private val mockInvoice5 = Invoice(2,11, Money((BigDecimal(100.23)), Currency.GBP), InvoiceStatus.PAID)
 
-    private val mockInvoiceList = arrayListOf<Invoice>(mockInvoice1, mockInvoice2, mockInvoice3, mockInvoice4)
+    private val mockInvoiceList = arrayListOf<Invoice>(mockInvoice1, mockInvoice2, mockInvoice3, mockInvoice4, mockInvoice5)
 
     private val dal = mockk<AntaeusDal> {
         every { fetchInvoice(404) } returns null
@@ -46,7 +47,7 @@ class InvoiceServiceTest {
 
     @Test
     fun `will return all invoices`() {
-        assertEquals(4, invoiceService.fetchAll().size)
+        assertEquals(5, invoiceService.fetchAll().size)
     }
 
     @Test
@@ -55,8 +56,18 @@ class InvoiceServiceTest {
     }
 
     @Test
+    fun `will return collection of pending invoices grouped by customerId`() {
+        assertEquals(2,invoiceService.getAllPendingInvoicesGroupedByCustomerId().size)
+    }
+
+    @Test
     fun `will return collection of invoices grouped by customerId`() {
-        // take a list of pening invoices, return a collection of invoice lists grouped by customerId
+        assertEquals(3,invoiceService.getAllInvoicesGroupedByCustomerId().size)
+    }
+
+    @Test
+    fun `will return pending invoices for individual customer`() {
+        assertEquals(2, invoiceService.getAllInvoicesForIndividualCustomer(11).size)
     }
 
 }
